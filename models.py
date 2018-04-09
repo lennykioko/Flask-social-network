@@ -1,6 +1,35 @@
 import datetime
-from peewee import *
+from peewee import * # pylint: disable=W0614
+
+# world-famous and super strong, uses th blowfish cipher, a salt to prevent rainbow table attacks and is resistent to brute-force attacks
+# cryptographic hashing is not the same as encryption
+# encryption is more of swapping a letter for another A--M and then you decrypt by doing the opposite
+# if you have the correct key or know the process you can decrypt an encrypted message
+# hashing is a proces that cannot be undone
+# a hash function always turns the same input into the same output while in the same process
+# cryptographic hashing involves a salt(random data) the salt makes the hash more unique and allows us to compare hashes even if we are in different processes
+# you can use flask_bcrypt outside of a flask app....even in your terminal
 from flask_bcrypt import generate_password_hash
+"""learn to use help() eg. help(generate_password_hash)
+Help on function generate_password_hash in module flask_bcrypt:
+
+generate_password_hash(password, rounds=None)
+    This helper function wraps the eponymous method of :class:`Bcrypt`. It
+    is intended to be used as a helper function at the expense of the
+    configuration variable provided when passing back the app object. In other
+    words this shortcut does not make use of the app object at all.
+
+    To this this function, simple import it from the module and use it in a
+    similar fashion as the method would be used. Here is a quick example::
+
+        from flask.ext.bcrypt import generate_password_hash
+        pw_hash = generate_password_hash('hunter2', 10)
+
+    :param password: The password to be hashed.
+    :param rounds: The optional number of rounds.
+
+Look at how much insight you get!! default rounds is 12
+"""
 from flask_login import UserMixin
 # Read more about UserMixin - 'http://flask-login.readthedocs.org/en/latest/#your-user-class'
 
@@ -9,11 +38,14 @@ DATABASE = SqliteDatabase('social.db')
 
 # classes can inherit from more than one parent class as such:
 # UserMixin should come before Model
+# a Mixin is a class that gives a small endscope functionality that is not standalone
+# UserMixin gives us properties to tell us if a user is logged in or not and a method to get the user id
+# UserMixin does not change the actual database
 class User(UserMixin, Model):
     """Create a model for our users"""
     username = CharField(unique=True)
     email = CharField(unique=True)
-    password = CharField(max_length=100)
+    password = CharField(max_length=100) # bcrypt hashes are around 60 characters...we have some nice free space
     # datetime lacks parenthesis so that it is run when the model is created and not when we run this script
     joined_at = DateTimeField(default=datetime.datetime.now) 
     is_admin = BooleanField(default=False)
@@ -38,7 +70,7 @@ class User(UserMixin, Model):
         """The users we are following"""
         # join connects various models from our database
         return(
-            User.select().join(
+            User.select().join( # pylint: disable=E1101
             Relationship, on=Relationship.to_user
             ).where(
                 Relationship.from_user == self
@@ -48,7 +80,7 @@ class User(UserMixin, Model):
     def followers(self):
         """Users Following the current user"""
         return(
-            User.select().join(
+            User.select().join( # pylint: disable=E1101
             Relationship, on=Relationship.from_user
             ).where(
                 Relationship.to_user == self
@@ -56,7 +88,7 @@ class User(UserMixin, Model):
         )
 
 
-    @classmethod # a method that can create a class of the class it exists in
+    @classmethod # a method that can create a class instance of the class it exists in
     def create_user(cls, username, email, password, admin=False):
         """cls refers to the class, in our case it is User"""
         try:

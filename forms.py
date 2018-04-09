@@ -1,4 +1,6 @@
-from flask_wtf import Form
+# forms are not just about display, instead they are more of validation
+# wtf forms protect our site against csrf attacks
+from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, TextAreaField
 
 from wtforms.validators import (DataRequired, Regexp, ValidationError, Email,
@@ -11,13 +13,13 @@ def name_exists(form, field):
 	if User.select().where(User.username == field.data).exists():
 		raise ValidationError('User with this name already exists.')
 
-def email_exists(form,field):
+def email_exists(form, field):
 	if User.select().where(User.email == field.data).exists():
 		raise ValidationError('User with this email already exists.')
 
-class RegisterForm(Form):
+class RegisterForm(FlaskForm):
 	username = StringField(
-		'Username',
+		'Username', # is the label
 		validators=[
 			DataRequired(),
 			Regexp(
@@ -49,9 +51,9 @@ class RegisterForm(Form):
 		])
 
 
-class LoginForm(Form):
+class LoginForm(FlaskForm):
 	email = StringField('Email', validators=[DataRequired(), Email()])
 	password = PasswordField('Password', validators=[DataRequired()])
 
-class PostForm(Form):
+class PostForm(FlaskForm):
 	content = TextAreaField("What's Up?", validators = [DataRequired()])

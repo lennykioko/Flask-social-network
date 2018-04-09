@@ -13,13 +13,14 @@ app.secret_key = "awerewf22323*&^%^&$eefdl;ikdjfkldf(ggf=0"
 DEBUG = True
 
 # set up the login manager
+# the login manager needs a secret key to work
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 
 @login_manager.user_loader
-def load_user(userid):
+def load_user(userid): # we automatically get the userid passed in here and can use it in the function
 	try:
 		return models.User.get(models.User.id == userid)
 	except models.DoesNotExist:
@@ -36,7 +37,7 @@ def before_request():
 @app.after_request
 def after_request(response):
 	"""close database connection after each request"""
-    # response automatically sets itself to the value of return from your view function
+    # response automatically sets itself to the value of return from your view function eg. [[return render_template(index.html)]] - takes this part
 	g.db.close()
 	return response
 
@@ -74,7 +75,7 @@ def login():
 	return render_template('login.html', form=form)
 
 @app.route('/logout')
-@login_required
+@login_required # you can have more than one decorator for a function
 def logout():
 	logout_user() # deletes cookies and sessions created by login_user()
 	flash("You have been logged out.", "success")
